@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor SVG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                    <div class="container-fluid">
+                        <a class="navbar-brand" href="#">Editor SVG</a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <button id="new-canvas" class="btn btn-outline-primary me-2">
+                                        <i class="bi bi-file-earmark-plus"></i> Nuevo
+                                    </button>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <button class="btn btn-outline-primary dropdown-toggle me-2" data-bs-toggle="dropdown">
+                                        <i class="bi bi-download"></i> Exportar
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><button id="export-svg" class="dropdown-item">SVG</button></li>
+                                        <li><button id="export-png" class="dropdown-item">PNG</button></li>
+                                        <li><button id="export-jpg" class="dropdown-item">JPG</button></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <div class="d-flex">
+                                <button id="delete-selected" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <!-- Herramientas y propiedades -->
+            <div class="col-md-3">
+                <div class="card mb-3" id="herramientas">
+                    <div class="card-header">Herramientas</div>
+                    <div class="card-body">
+                        <div class="btn-group-vertical w-100" role="group">
+                            <button id="select-tool" class="btn btn-outline-secondary active">
+                                <i class="bi bi-cursor"></i> Seleccionar
+                            </button>
+                            <button id="rect-tool" class="btn btn-outline-secondary">
+                                <i class="bi bi-square"></i> Rectángulo
+                            </button>
+                            <button id="circle-tool" class="btn btn-outline-secondary">
+                                <i class="bi bi-circle"></i> Círculo
+                            </button>
+                            <button id="line-tool" class="btn btn-outline-secondary">
+                                <i class="bi bi-slash-lg"></i> Línea
+                            </button>
+                            <button id="path-tool" class="btn btn-outline-secondary">
+                                <i class="bi bi-pencil"></i> Trazo libre
+                            </button>
+                            <button id="text-tool" class="btn btn-outline-secondary">
+                                <i class="bi bi-fonts"></i> Texto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">Propiedades</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="fill-color" class="form-label">Color de relleno</label>
+                            <input type="color" id="fill-color" class="form-control form-control-color w-100" value="#3498db">
+                        </div>
+                        <div class="mb-3">
+                            <label for="stroke-color" class="form-label">Color de borde</label>
+                            <input type="color" id="stroke-color" class="form-control form-control-color w-100" value="#000000">
+                        </div>
+                        <div class="mb-3">
+                            <label for="stroke-width" class="form-label">Grosor de borde: <span id="stroke-width-value">2px</span></label>
+                            <input type="range" id="stroke-width" class="form-range" min="0" max="20" value="2">
+                        </div>
+                        <div class="mb-3">
+                            <label for="opacity" class="form-label">Opacidad: <span id="opacity-value">100%</span></label>
+                            <input type="range" id="opacity" class="form-range" min="0" max="100" value="100">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3 layers-panel">
+                    <div class="card-header">Capas</div>
+                    <div class="card-body p-0">
+                        <ul id="layers-list" class="list-group list-group-flush">
+                            <!-- Las capas se generarán dinámicamente -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Área de trabajo -->
+            <div class="col-md-9">
+                <div id="editor-container" class="editor-container">
+                    <!-- Los controles de tamaño se añadirán aquí mediante JavaScript -->
+                    <div class="canvas-wrapper">
+                        <canvas id="canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de exportación -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exportModalLabel">Exportar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="export-filename" class="form-label">Nombre del archivo</label>
+                        <input type="text" class="form-control" id="export-filename" value="mi-diseño.svg">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Vista previa</label>
+                        <div id="export-preview" class="border p-3 bg-light text-center"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="export-code" class="form-label">Código</label>
+                        <textarea id="export-code" class="form-control" rows="5" readonly></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="download-export">Descargar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
+    <script src="/js/script.js"></script>
+</body>
+</html>
+
